@@ -1,1 +1,284 @@
+IT359 Project Plan
+Overview:
+Project Name: AI Security Analyst - Sn00py Bl0ck3r
+Project Description: Sn00py Bl0ck3r is an AI-assisted cybersecurity analysis tool designed to help users identify potential inbound security threats. The application will analyze QR codes, URLs, emails, files, downloads, and files obtained from removable USB storage for indicators of phishing or malicious activity.
+Sn00py Bl0ck3r will combine rule-based security checks, reputation services, file and URL analysis, and AI-generated explanations to provide users with a clear risk score and a human-readable summary of why an item may be considered suspicious.
+The goal is not to replace antivirus or enterprise security software, but to create an easy-to-use security analysis tool that helps users better understand potential threats before interacting with suspicious content.
+Objectives and Success Criteria:
+-	Develop a functioning cybersecurity analysis application 
+-	Analyze URLs for suspicious characteristics and reputation information
+-	Decode and analyze QR codes before users visit the embedded URL
+-	Analyze email content and available header information for phishing indicators.
+-	Analyze files using file type, metadata, cryptographic hashes, and reputation information
+-	Allow files from removable USB devices to be selected and analyzed
+-	Generate an overall risk score for analyzed items
+-	Provide a human-readable explanation of detected risks
+-	Maintain a record or dashboard of completed scans and results
+-	Provide clear documentation explaining installation and usage
+Will be considered successful if:
+-	The application successfully analyzed at least four supported threat categories 
+-	QR codes can be decoded and their URLs analyzed
+-	Suspicious URLs and email indicators can be identified using defined security rules.
+-	Files can be analyzed without being executed
+-	The system produces consistent risk scores such as Low, Medium, High, or Critical
+-	Users receive an understandable explanation of why an item received its score
+-	The program can successfully demonstrate both safe and suspicious test samples
+-	The application operates without major crashes during final testing and demonstration
+-	All required GitHub, report, and presentation deliverables are completed by the final deadline
+Start Date: 8/25/26
+End Date: 12/5/26
+Stakeholders
+Sponsor Designation: Dr. Sean Sanders, project sponsor, will provide project requirements, academic guidance, feedback, and final evaluation
+Stakeholder List: Lucas, Eric, Companies/ Standard End Users
+	Both of us will:
+-	Assist with project planning and scheduling
+-	Research phishing and cybersecurity indicators
+-	Develop or assist with the risk-scoring criteria
+-	Develop or assist with email, URL, and file-analysis features
+-	Develop or assist with the user interface and dashboard
+-	Develop or assist with the application’s core background functionality
+-	Develop or assist with the QR-code and URL-analysis components
+-	Integrate required APIs and external security services
+-	Develop or assist with the file hashing and static file-analysis functionality
+-	Develop or assist with the data storage and scan-history functionality
+-	Participate in testing, debugging, and final presentation
+Scope Management
+In-scope items:
+-	Email phishing analysis
+-	Email content analysis for common social-engineering indicators
+-	Analysis of available email-header information
+-	QR-code decoding
+-	Security analysis of URLs contained within QR codes
+-	URL reputation checks
+-	Detection of suspicious URL characteristics
+-	File type identification
+-	File hash generation using cryptographic hashing such as SHA-256
+-	File reputation checks using supported security APIs when available
+-	Static analysis of suspicious files without executing them
+-	Analysis of files selected from USB/removable storage devices
+-	Analysis of downloaded files
+-	AI-generated explanations of security findings
+-	Risk scoring
+-	Human-readable risk categories such as
+o	Low
+o	Medium
+o	High
+o	Critical
+-	Scan-results dashboard or history
+-	Basic error handling and input validation
+-	GitHub repository containing source code and documentation
+-	Final written report
+-	Final video demonstration
+Out-of-scope items:
+-	Executing real malware or ransomware
+-	Developing or distributing malicious software
+-	Dynamic malware analysis in a production environment
+-	Full antivirus or endpoint-detection-and-response functionality
+-	Automatic removal or quarantine of malware
+-	Active exploitation of vulnerable systems
+-	Penetration testing systems without authorization
+-	Scanning an entire corporate network
+-	Enterprise-scale deployment
+-	Continuous monitoring of corporate email servers
+-	Automatic access to a user’s private email account
+-	Deep hardware or firmware analysis of USB devices
+-	Guaranteed identification of every malicious file or phishing attempt
+-	Replacement of professional security such as Microsoft Defender, CrowdStrike, or enterprise SIEM systems
+Project assumptions:
+-	Both team members will have regular access to development computers
+-	Development computers will support the selected programming language and libraries 
+-	Internet access will normally be available for external reputation services
+-	Free or educational API access will remain available during development
+-	Test samples will consist primarily of benign, simulated, or publicly documented examples
+-	Malware files will not be intentionally executed
+-	GitHub will remain available for source control and project submission
+-	The application will primarily be demonstrated in a controlled testing environment
+-	Users will understand that the generated security assessment is advisory rather than a guarantee
+-	Both project members will contribute throughout the semester
+Constraints:
+-	Two-person development team
+-	Semester deadline of December 5, 2026
+-	Limited or no project budget
+-	API rate limits
+-	API keys may require certain reputation services
+-	Limited access to real-world malicious samples for safety reasons
+-	False positives and false negatives may occur
+-	AI-generated explanations may occasionally be inaccurate
+-	The project must remain within legal and ethical cybersecurity boundaries
+-	Time available must also account for the final report and presentation
+-	Some functionality may depend on third-party services being online
+Timeline
+Milestones with key dates and deliverables:
+August 25th – September 4th – Project Planning and Research
+-	Finalize project scope
+-	Finalize team responsibilities
+-	Research phishing, QR-code, URL, file, and email indicators
+-	Determine programming language and framework
+-	Identify required APIs and libraries 
+-	Create GitHub repository
+-	Create initial README and folder structure
+September 5th – September 18th – Application Architecture and Protype
+-	Design overall application architecture
+-	Create initial user interface
+-	Create risk-scoring model
+-	Implement basic URL input and analysis
+-	Establish GitHub workflow between team members
+September 19th – October 2nd – QR Code and URL Analysis
+-	Implement QR-code upload/reading
+-	Extract URLs from QR codes
+-	Detect suspicious URL characteristics
+-	Integrate URL reputation service if available
+-	Connect findings to the risk-scoring system
+October 3rd – October 16th – Email Phishing Analysis
+-	Implement email-text analysis
+-	Detect common phishing language and indicators
+-	Analyze sender/domain information when available
+-	Analyze links contained in emails
+-	Add email findings to overall risk score
+October 17th – October 30th – File and Download Analysis
+-	Generate SHA-256 hashes
+-	Detect file types and extensions
+-	Identify potentially risky file types
+-	Performs reputation checks where supported
+-	Implement static file analysis
+-	Support file selection from local and removable storage
+October 31st – November 8th – AI Analysis and Human-Readable Reporting
+-	Connect detected indicators to AI-assisted explanations
+-	Produce clear explanations of detected threats
+-	Finalize Low, Medium, High, Critical risk categories
+-	Improve scan-results dashboard
+November 9th – November 18th – Integration and Testing
+-	Combine all scanning components 
+-	Test safe and suspicious examples
+-	Test error handling
+-	Document known limitations
+-	Resolve high-priority bugs
+November 19th – November 25th – Documentation and Final Writeup
+-	Complete README
+-	Complete dependency list
+-	Complete setup instructions
+-	Complete usage examples
+-	Draft 5–7-page final report
+-	Review source-code comments and repository organization 
+November 26th – December 1st – Final Testing and Presentation Preparation
+-	Conduct complete system test
+-	Prepare demonstration samples
+-	Create presentation outline
+-	Practice live demonstration
+-	Complete final written report
+December 2nd – December 4th – Final Presentation and Repository Review
+-	Record 10–15-minute video
+-	Upload video
+-	Add video link to top of README
+-	Add final PDF report to repository
+-	Verify all repository links and instructions
+-	Verify repository is public
+December 5th – Final Submission
+-	Submit final GitHub repository URL
+-	Verify video accessibility
+-	Verify complete repository functionality
+
+
+
+
+
+
+Risk Management
+Risk	Probability	Impact	Mitigation
+Project scope becomes too large	High	High	Prioritize core features and treat additional features as optional enhancements
+External API becomes unavailable 	Medium	High	Design local analysis features that can operate without the API and identify backup services where possible
+API rate limits are reached	Medium	Medium	Cache results when appropriate and limit unnecessary API requests
+False positives/False negativites 	High	Medium	Use multiple indicators and clearly state that results are advisory
+AI produces inaccurate explanation	Medium	Medium	Based the risk score primarily on measurable security indicators rather than AI output alone
+Malware or unsafe file handling	Low	High	Use static analysis only and never intentionally execute malicious files
+Integration problems between modules	Medium	High	Integrate components throughout development rather than waiting until the end
+GitHub merge conflicts or lost work	Medium	Medium	Use branches, frequent commits, and pull requests where appropriate
+Team member availability 	Medium	Medium	Maintain shared documentation and avoid assigning an entire critical system to only one person
+Development falls behind schedule	Medium	High	Review progress weekly and reduce optional features when necessary
+Demo failure	Low-Medium	High	Prepare tested demonstration samples and complete multiple practice run before recording
+Internet failure during demo	Low	Medium	Include examples that can demonstrate local analysis without requiring live API connections
+
+Resources:
+Budget Allocation:
+Estimated Budget: $0 - $50
+The goal is to complete the project using free and open-source software whenever possible.
+Possible expenses could include:
+-	Optional API usage beyond free-tier limits
+-	Optional cloud-hosting expenses
+-	Optional AI API credit
+No paid service will be considered essential to the basic functionality of the project.
+Required tools and technology:
+•	Python – primary programming language
+•	GitHub – source control and final project repository
+•	Git – version control
+•	Visual Studio Code – development environment
+•	Streamlit, Flask, or similar framework – potential user interface
+•	Python hashlib – cryptographic file hashing
+•	QR-code processing library – decoding uploaded QR codes
+•	Regular expressions and URL parsing libraries – phishing and URL analysis
+•	Email parsing libraries – analysis of email files and headers
+•	VirusTotal API or similar service – potential URL/file reputation checks
+•	Optional AI/LLM service – generation of user-friendly explanations
+•	JSON, SQLite, or similar storage – scan history and results
+•	GitHub Issues/Projects – task tracking if desired
+Final technologies may change during the protype stage depending on compatibility and project requirements.
+Project Dependencies:
+-	Python libraries
+-	Availability of third-party security reputation APIs
+-	Internet connectivity for reputation lookups
+-	API keys
+-	AI service availability if AI explanations use an external service
+-	Operating-system file permissions
+-	Access to safe testing data
+-	Both team members maintaining compatible development environments
+-	GitHub availability 
+The application should be designed so that as much core functionality as possible continues to operate if an external service is unavailable. 
+Communication:
+Meeting cadence and reporting frequency:
+•	Meetings to work on project at Milner library twice a week for the entirety of the project
+•	Meetings will start with a glance at the predicted project schedule to ensure we stay on track to finish the project on time
+•	Meetings will end with a double check with the project schedule to ensure we did sufficient work towards the project
+•	Project meeting notes to keep track of the projects progress through the semester, taken at every single meeting
+•	Monthly check-ins (after every ~8 meetings) will be held to confirm progress
+Communication channels:
+•	Communications will be made over iMessage and Outlook (and in person)
+Action Items:
+•	Collect test emails
+o	Gather legitimate phishing emails from both of our inboxes
+o	Should have a solid list by September 8th 
+o	LR and EA
+•	Create an email parser
+o	Design a way to parse sender, recipient, hyperlinks, etc.
+o	Should be created by September 22nd 
+o	LR and EA
+•	Design scam detection rules
+o	Figure out the rules that our system will use to flag suspicious emails
+o	Should be finished by September 22nd 
+o	LR and EA
+•	Add threat-intelligence checks
+o	Check web domains to determine if links are known to be malicious using a predesigned service such as Safe Browsing
+o	Should be fully set up by September 29th 
+o	LR and EA
+•	Add AI analysis
+o	Have the AI determined if the email is Safe, Suspicious, or Malicious
+o	Also add support to analyzeanalyze QR codes and USB devices with AI
+o	Should be implemented by October 1st  
+o	LR and EA
+•	Determine a risk scale
+o	A scale from 1-100 will be designed to rate each email
+o	Should be implemented by October 8th 
+o	LR and EA
+•	Build an interface
+o	Design a user-friendly dashboard so information can be easily digested
+o	Should be fully created by October 22nd 
+o	LR and EA
+•	Test and improvise
+o	Run as many test scenarios within the tool as possible to find all flaws, and then fix the found flaws
+o	Should be ready to roll out by October 29th 
+o	LR and EA
+•	Prepare the final deliverables
+o	Shoot the demo video, create presentation slides, and make the GitHub look as organized as possible
+o	Should be ready to present by November 19th 
+o	LR and EA
+
 
