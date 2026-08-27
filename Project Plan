@@ -184,19 +184,19 @@ December 5th – Final Submission
 
 
 Risk Management
-Risk	Probability	Impact	Mitigation
-Project scope becomes too large	High	High	Prioritize core features and treat additional features as optional enhancements
-External API becomes unavailable 	Medium	High	Design local analysis features that can operate without the API and identify backup services where possible
-API rate limits are reached	Medium	Medium	Cache results when appropriate and limit unnecessary API requests
-False positives/False negativites 	High	Medium	Use multiple indicators and clearly state that results are advisory
-AI produces inaccurate explanation	Medium	Medium	Based the risk score primarily on measurable security indicators rather than AI output alone
-Malware or unsafe file handling	Low	High	Use static analysis only and never intentionally execute malicious files
-Integration problems between modules	Medium	High	Integrate components throughout development rather than waiting until the end
-GitHub merge conflicts or lost work	Medium	Medium	Use branches, frequent commits, and pull requests where appropriate
-Team member availability 	Medium	Medium	Maintain shared documentation and avoid assigning an entire critical system to only one person
-Development falls behind schedule	Medium	High	Review progress weekly and reduce optional features when necessary
-Demo failure	Low-Medium	High	Prepare tested demonstration samples and complete multiple practice run before recording
-Internet failure during demo	Low	Medium	Include examples that can demonstrate local analysis without requiring live API connections
+
+Risk - Project scope becomes too large	Probability - High	Impact - High	Mitigation - Prioritize core features and treat additional features as optional enhancements
+Risk - External API becomes unavailable 	Probability - Medium	Impact - High	Mitigation - Design local analysis features that can operate without the API and identify backup services where possible
+Risk - API rate limits are reached	Probability - Medium	Impact - Medium	Mitigation - Cache results when appropriate and limit unnecessary API requests
+Risk - False positives/False negativites 	Probability - High	Impact - Medium	Mitigation - Use multiple indicators and clearly state that results are advisory
+Risk - AI produces inaccurate explanation	Probability - Medium	Impact - Medium	Mitigation - Based the risk score primarily on measurable security indicators rather than AI output alone
+Risk - Malware or unsafe file handling	Probability - Low	Impact - High	Mitigation - Use static analysis only and never intentionally execute malicious files
+Risk - Integration problems between modules	Probability - Medium	Impact - High	Mitigation - Integrate components throughout development rather than waiting until the end
+Risk - GitHub merge conflicts or lost work	Probability - Medium	Impact - Medium	Mitigation - Use branches, frequent commits, and pull requests where appropriate
+Risk - Team member availability 	Probability - Medium	Impact - Medium	Mitigation - Maintain shared documentation and avoid assigning an entire critical system to only one person
+Risk - Development falls behind schedule	Probability - Medium	Impact - High	Mitigation - Review progress weekly and reduce optional features when necessary
+Risk - Demo failure	Low-Medium	Probability - High Impact - N/A	Mitigation - Prepare tested demonstration samples and complete multiple practice run before recording
+Risk - Internet failure during demo	Probability - Low	Impact - Medium	Mitigation - Include examples that can demonstrate local analysis without requiring live API connections
 
 Resources:
 Budget Allocation:
