@@ -1,14 +1,14 @@
 import streamlit as st
 from scanners.url_scanner import scan_url
 from scanners.email_scanner import scan_email
+from scanners.qr_scanner import decode_qr
 
 st.set_page_config(
     page_title="Sn00py Bl0ck3r",
-    page_icon="🛡️",
     layout="wide"
 )
 
-st.title("🛡️ Sn00py Bl0ck3r")
+st.title("Sn00py Bl0ck3r")
 st.subheader("AI-Assisted Cybersecurity Threat Analyzer")
 
 st.write(
@@ -60,7 +60,7 @@ with tab1:
                 st.subheader("Security Findings")
 
                 for finding in result["findings"]:
-                    st.write(f"• {finding}")
+                    st.write(f"- {finding}")
 
                 if result["risk"] in ["High", "Critical"]:
                     st.error(
@@ -78,8 +78,78 @@ with tab1:
                     )
 
 with tab2:
-    st.header("QR Code Analysis")
-    st.file_uploader("Upload a QR code image", type=["png", "jpg", "jpeg"])
+    st.header("QR Code Security Analysis")
+
+    qr_file = st.file_uploader(
+        "Upload a QR code image",
+        type=["png", "jpg", "jpeg"],
+        key="qr_upload"
+    )
+
+    if qr_file is not None:
+        st.image(qr_file, caption="Uploaded QR Code", width=250)
+
+        if st.button("Scan QR Code"):
+            qr_result = decode_qr(qr_file.getvalue())
+
+            if not qr_result["success"]:
+                st.error(qr_result["error"])
+            else:
+                content = qr_result["content"]
+
+                st.success("QR code decoded successfully!")
+                st.write("**Decoded Content:**")
+                st.code(content)
+
+                if content.lower().startswith(("http://", "https://")):
+                    result = scan_url(content)
+
+                    if result["risk"] == "Invalid":
+                        st.error(
+                            "Decoded URL is invalid: "
+                            + "; ".join(result["findings"])
+                        )
+                    else:
+                        st.subheader("URL Security Results")
+
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+                            st.metric(
+                                "Risk Score",
+                                f"{result['score']}/100"
+                            )
+
+                        with col2:
+                            st.metric("Risk Level", result["risk"])
+
+                        st.progress(result["score"] / 100)
+
+                        st.subheader("Security Findings")
+
+                        for finding in result["findings"]:
+                            st.write(f"- {finding}")
+
+                        if result["risk"] in ["High", "Critical"]:
+                            st.error(
+                                "This QR code contains a URL with "
+                                "suspicious characteristics."
+                            )
+                        elif result["risk"] == "Medium":
+                            st.warning(
+                                "Some suspicious URL characteristics "
+                                "were detected."
+                            )
+                        else:
+                            st.success(
+                                "No major suspicious characteristics "
+                                "detected by the current rules."
+                            )
+                else:
+                    st.info(
+                        "This QR code does not contain a supported "
+                        "HTTP or HTTPS URL."
+                    )
 
 with tab3:
     st.header("Email Phishing Analysis")
@@ -112,7 +182,7 @@ with tab3:
 
             st.subheader("Security Findings")
             for finding in result["findings"]:
-                st.write(f"• {finding}")
+                st.write(f"- {finding}")
 
             st.info(
                 "These findings require context. Legitimate emails can "
