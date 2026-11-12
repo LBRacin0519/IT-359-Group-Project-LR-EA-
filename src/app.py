@@ -1,5 +1,6 @@
 import streamlit as st
 from scanners.url_scanner import scan_url
+from scanners.email_scanner import scan_email
 
 st.set_page_config(
     page_title="Sn00py Bl0ck3r",
@@ -82,7 +83,41 @@ with tab2:
 
 with tab3:
     st.header("Email Phishing Analysis")
-    st.text_area("Paste suspicious email content here:")
+
+    st.caption(
+        "Basic text checks only. Email headers, links, and attachments "
+        "are not analyzed yet. Low risk does not mean an email is safe."
+    )
+
+    email_content = st.text_area(
+        "Paste email content here:",
+        height=250,
+    )
+
+    if st.button("Scan Email"):
+        result = scan_email(email_content)
+
+        if result["risk"] == "Invalid":
+            st.warning(result["findings"][0])
+        else:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.metric("Risk Score", f"{result['score']}/100")
+
+            with col2:
+                st.metric("Risk Level", result["risk"])
+
+            st.progress(result["score"] / 100)
+
+            st.subheader("Security Findings")
+            for finding in result["findings"]:
+                st.write(f"• {finding}")
+
+            st.info(
+                "These findings require context. Legitimate emails can "
+                "trigger rules, and phishing emails can evade them."
+            )
 
 with tab4:
     st.header("File Security Analysis")
