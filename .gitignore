@@ -123,3 +123,27 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# API keys and private configuration
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local scan history databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files and scan artifacts
+uploads/
+temp/
+tmp/
+scan_results/
+
+# Sensitive or potentially malicious test samples
+samples/private/
+samples/malicious/
+
+# Temporary files
+*.tmp
+*.bak
