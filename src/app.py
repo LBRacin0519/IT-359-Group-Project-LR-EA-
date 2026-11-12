@@ -3,7 +3,6 @@ from scanners.url_scanner import scan_url
 
 st.set_page_config(
     page_title="Sn00py Bl0ck3r",
-    page_icon="🛡️",
     layout="wide"
 )
 
