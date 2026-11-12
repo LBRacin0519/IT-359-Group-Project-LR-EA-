@@ -92,7 +92,8 @@ profile_default/
 ipython_config.py
 
 # pyenv
-.python-version
+# Keep our shared Python version configuration
+!.python-version
 
 # celery beat schedule file
 celerybeat-schedule
