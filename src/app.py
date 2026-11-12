@@ -6,7 +6,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🛡️ Sn00py Bl0ck3r")
+st.title("Sn00py Bl0ck3r")
 st.subheader("AI-Assisted Cybersecurity Threat Analyzer")
 
 st.write(
