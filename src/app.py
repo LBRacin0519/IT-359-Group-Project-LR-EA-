@@ -1,4 +1,5 @@
 import streamlit as st
+from scanners.url_scanner import scan_url
 
 st.set_page_config(
     page_title="Sn00py Bl0ck3r",
@@ -28,9 +29,52 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 with tab1:
     st.header("URL Security Analysis")
-    url = st.text_input("Enter a URL to analyze:")
+
+    url = st.text_input(
+        "Enter a URL to analyze:",
+        placeholder="https://example.com"
+    )
+
     if st.button("Scan URL"):
-        st.info("URL scanning functionality coming soon!")
+        if not url.strip():
+            st.warning("Please enter a URL.")
+        else:
+            result = scan_url(url)
+
+            if result["risk"] == "Invalid":
+                st.error("Invalid URL: " + "; ".join(result["findings"]))
+            else:
+                st.subheader("Scan Results")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.metric("Risk Score", f"{result['score']}/100")
+
+                with col2:
+                    st.metric("Risk Level", result["risk"])
+
+                st.progress(result["score"] / 100)
+
+                st.subheader("Security Findings")
+
+                for finding in result["findings"]:
+                    st.write(f"• {finding}")
+
+                if result["risk"] in ["High", "Critical"]:
+                    st.error(
+                        "This URL has multiple suspicious characteristics. "
+                        "Exercise caution before interacting with it."
+                    )
+                elif result["risk"] == "Medium":
+                    st.warning(
+                        "Some suspicious characteristics were detected."
+                    )
+                else:
+                    st.success(
+                        "No major suspicious characteristics detected "
+                        "by the current rules."
+                    )
 
 with tab2:
     st.header("QR Code Analysis")
