@@ -28,6 +28,14 @@ def scan_url(url):
         if not hostname:
             raise ValueError("Missing hostname.")
 
+        # Reject whitespace within the URL.
+        # Surrounding whitespace was already removed by strip().
+        if any(character.isspace() for character in url):
+            raise ValueError("URLs cannot contain unencoded whitespace.")
+
+        # Validate that any supplied port is numeric and in range.
+        _ = parsed.port
+
         # Detect URLs without HTTPS
         if parsed.scheme.lower() == "http":
             score += 20
