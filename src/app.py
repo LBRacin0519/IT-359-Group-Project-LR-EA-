@@ -1,6 +1,9 @@
+import hashlib
+
 import streamlit as st
 from scanners.url_scanner import scan_url
 from scanners.email_scanner import scan_email
+from scanners.file_scanner import MAX_FILE_SIZE, scan_file
 from scanners.qr_scanner import decode_qr
 from core.ai_analyzer import analyze_with_ai
 
@@ -336,42 +339,125 @@ with tab2:
 
 with tab3:
     st.header("Email Phishing Analysis")
-
     st.caption(
-        "Basic text checks only. Email headers, links, and attachments "
-        "are not analyzed yet. Low risk does not mean an email is safe."
+        "Basic text-only phishing rules. Headers, embedded URLs, and "
+        "attachments are not analyzed yet. Low risk does not mean safe."
     )
-
     email_content = st.text_area(
-        "Paste email content here:",
-        height=250,
+        "Paste email content here:", height=250, key="email_text"
     )
 
-    if st.button("Scan Email"):
-        result = scan_email(email_content)
+    for state_key in ("email_scan_result", "email_ai_result", "email_scanned_input"):
+        if state_key not in st.session_state:
+            st.session_state[state_key] = None
 
+    if st.button("Scan Email", key="scan_email"):
+        st.session_state.email_scan_result = scan_email(email_content)
+        st.session_state.email_scanned_input = email_content
+        st.session_state.email_ai_result = None
+
+    result = st.session_state.email_scan_result
+    if result is not None and email_content == st.session_state.email_scanned_input:
         if result["risk"] == "Invalid":
-            st.warning(result["findings"][0])
+            st.warning("; ".join(result["findings"]))
         else:
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.metric("Risk Score", f"{result['score']}/100")
-
-            with col2:
-                st.metric("Risk Level", result["risk"])
-
+            c1, c2 = st.columns(2)
+            c1.metric("Risk Score", f"{result['score']}/100")
+            c2.metric("Risk Level", result["risk"])
             st.progress(result["score"] / 100)
-
             st.subheader("Security Findings")
             for finding in result["findings"]:
                 st.write(f"- {finding}")
-
             st.info(
-                "These findings require context. Legitimate emails can "
-                "trigger rules, and phishing emails can evade them."
+                "These rules may miss phishing attempts or flag legitimate messages."
+            )
+
+            st.divider()
+            st.subheader("Email AI Security Explanation")
+            if st.button("Generate Email AI Explanation", key="email_ai"):
+                with st.spinner("Generating email explanation..."):
+                    st.session_state.email_ai_result = analyze_with_ai(
+                        scan_type="Email", score=result["score"],
+                        risk=result["risk"], findings=result["findings"]
+                    )
+            ai_result = st.session_state.email_ai_result
+            if ai_result is not None:
+                if ai_result["success"]:
+                    if ai_result["explanation"].startswith("[OFFLINE TEST"):
+                        st.info("Offline demonstration mode: not a live Sushi AI result.")
+                    st.markdown(ai_result["explanation"])
+                else:
+                    st.warning(ai_result["error"])
+            st.caption(
+                "Sushi AI explains scanner findings but cannot change the score. "
+                "Only rule findings, not the original email text, are sent to Sushi AI."
             )
 
 with tab4:
     st.header("File Security Analysis")
-    st.file_uploader("Upload a file for static analysis")
+    st.caption(
+        "Static checks only: no execution, archive unpacking, or upload of "
+        "file bytes to Sushi AI. Maximum file size: 15 MiB."
+    )
+    file_upload = st.file_uploader(
+        "Upload a file for static analysis", key="file_upload"
+    )
+
+    for state_key in ("file_scan_result", "file_ai_result", "file_scanned_id"):
+        if state_key not in st.session_state:
+            st.session_state[state_key] = None
+
+    if file_upload is not None:
+        if file_upload.size > MAX_FILE_SIZE:
+            st.warning("File exceeds the 15 MiB static-analysis limit.")
+        else:
+            file_data = file_upload.getvalue()
+            file_id = (
+                file_upload.name,
+                hashlib.sha256(file_data).hexdigest()
+            )
+            if st.button("Scan File", key="scan_file"):
+                st.session_state.file_scan_result = scan_file(
+                    file_upload.name, file_data
+                )
+                st.session_state.file_scanned_id = file_id
+                st.session_state.file_ai_result = None
+
+            result = st.session_state.file_scan_result
+            if result is not None and st.session_state.file_scanned_id == file_id:
+                if result["risk"] == "Invalid":
+                    st.warning("; ".join(result["findings"]))
+                else:
+                    c1, c2 = st.columns(2)
+                    c1.metric("Risk Score", f"{result['score']}/100")
+                    c2.metric("Risk Level", result["risk"])
+                    st.progress(result["score"] / 100)
+                    st.write("**SHA-256 (calculated locally):**")
+                    st.code(result["sha256"])
+                    st.write(f"**Detected type:** {result['file_type']}")
+                    st.write(f"**Size:** {result['size_bytes']} bytes")
+                    st.subheader("Security Findings")
+                    for finding in result["findings"]:
+                        st.write(f"- {finding}")
+                    st.info("Static checks are heuristic and cannot prove file safety.")
+
+                    st.divider()
+                    st.subheader("File AI Security Explanation")
+                    if st.button("Generate File AI Explanation", key="file_ai"):
+                        with st.spinner("Generating file explanation..."):
+                            st.session_state.file_ai_result = analyze_with_ai(
+                                scan_type="File", score=result["score"],
+                                risk=result["risk"], findings=result["findings"]
+                            )
+                    ai_result = st.session_state.file_ai_result
+                    if ai_result is not None:
+                        if ai_result["success"]:
+                            if ai_result["explanation"].startswith("[OFFLINE TEST"):
+                                st.info("Offline demonstration mode: not a live Sushi AI result.")
+                            st.markdown(ai_result["explanation"])
+                        else:
+                            st.warning(ai_result["error"])
+                    st.caption(
+                        "Sushi AI explains scanner findings but cannot change the score. "
+                        "File contents and SHA-256 are not sent to Sushi AI."
+                    )
