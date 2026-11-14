@@ -340,8 +340,8 @@ with tab2:
 with tab3:
     st.header("Email Phishing Analysis")
     st.caption(
-        "Basic text-only phishing rules. Headers, embedded URLs, and "
-        "attachments are not analyzed yet. Low risk does not mean safe."
+        "Checks phishing language, pasted headers, and embedded HTTP(S) URLs. "
+        "Links are never opened; low risk does not mean safe."
     )
     email_content = st.text_area(
         "Paste email content here:", height=250, key="email_text"
