@@ -1,8 +1,10 @@
 import streamlit as st
+import hashlib
 from scanners.url_scanner import scan_url
 from scanners.email_scanner import scan_email
 from scanners.qr_scanner import decode_qr
 from core.ai_analyzer import analyze_with_ai
+from scanners.file_scanner import scan_file, MAX_FILE_SIZE
 
 st.set_page_config(
     page_title="Sn00py Bl0ck3r",
@@ -486,4 +488,186 @@ with tab3:
 
 with tab4:
     st.header("File Security Analysis")
-    st.file_uploader("Upload a file for static analysis")
+
+    st.caption(
+        "Static file analysis using SHA-256 hashing, file signatures, "
+        "extensions, and suspicious file characteristics. "
+        "Files are never executed or uploaded to Sushi AI."
+    )
+
+    file_upload = st.file_uploader(
+        "Upload a file for security analysis",
+        key="file_upload"
+    )
+
+    # Preserve results across Streamlit reruns
+    if "file_scan_result" not in st.session_state:
+        st.session_state.file_scan_result = None
+
+    if "file_ai_result" not in st.session_state:
+        st.session_state.file_ai_result = None
+
+    if "file_scanned_id" not in st.session_state:
+        st.session_state.file_scanned_id = None
+
+    if file_upload is not None:
+
+        # Validate file size before loading its contents
+        if file_upload.size > MAX_FILE_SIZE:
+            st.error(
+                "File exceeds the 15 MiB static-analysis limit."
+            )
+
+        else:
+            file_data = file_upload.getvalue()
+
+            # Identify the uploaded file to prevent stale results
+            file_id = (
+                file_upload.name,
+                hashlib.sha256(file_data).hexdigest()
+            )
+
+            if st.button("Scan File", key="scan_file"):
+
+                st.session_state.file_scan_result = scan_file(
+                    file_upload.name,
+                    file_data
+                )
+
+                st.session_state.file_scanned_id = file_id
+                st.session_state.file_ai_result = None
+
+            result = st.session_state.file_scan_result
+
+            if (
+                result is not None
+                and st.session_state.file_scanned_id == file_id
+            ):
+
+                if result["risk"] == "Invalid":
+                    st.warning("; ".join(result["findings"]))
+
+                else:
+                    st.subheader("File Scan Results")
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.metric(
+                            "Risk Score",
+                            f"{result['score']}/100"
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Risk Level",
+                            result["risk"]
+                        )
+
+                    st.progress(result["score"] / 100)
+
+                    # File metadata
+                    st.subheader("File Information")
+
+                    st.write("**Filename:**")
+                    st.text(result["filename"])
+
+                    st.write(
+                        "**File Size:**",
+                        result["size_bytes"],
+                        "bytes"
+                    )
+
+                    st.write(
+                        "**Detected File Type:**",
+                        result["file_type"]
+                    )
+
+                    st.write("**SHA-256 Hash:**")
+                    st.code(result["sha256"])
+
+                    # Security findings
+                    st.subheader("Security Findings")
+
+                    for finding in result["findings"]:
+                        st.write(f"- {finding}")
+
+                    if result["risk"] in ["High", "Critical"]:
+                        st.error(
+                            "This file contains potentially dangerous "
+                            "characteristics. Avoid opening or executing "
+                            "it unless its origin is verified."
+                        )
+
+                    elif result["risk"] == "Medium":
+                        st.warning(
+                            "Some suspicious file characteristics "
+                            "were detected."
+                        )
+
+                    else:
+                        st.success(
+                            "No elevated-risk characteristics detected "
+                            "by the current static checks."
+                        )
+
+                    # ----------------------------------
+                    # SUSHI AI FILE SECURITY EXPLANATION
+                    # ----------------------------------
+
+                    st.divider()
+
+                    st.subheader("AI Security Explanation")
+
+                    st.write(
+                        "Generate a security explanation and "
+                        "recommended precautions using Sushi AI."
+                    )
+
+                    if st.button(
+                        "Generate File AI Explanation",
+                        key="file_ai"
+                    ):
+                        with st.spinner(
+                            "Generating security explanation..."
+                        ):
+
+                            ai_result = analyze_with_ai(
+                                scan_type="File",
+                                score=result["score"],
+                                risk=result["risk"],
+                                findings=result["findings"]
+                            )
+
+                            st.session_state.file_ai_result = ai_result
+
+                    ai_result = st.session_state.file_ai_result
+
+                    if ai_result is not None:
+
+                        if ai_result["success"]:
+
+                            if ai_result["explanation"].startswith(
+                                "[OFFLINE TEST"
+                            ):
+                                st.info(
+                                    "Offline demonstration mode is active. "
+                                    "This explanation was not generated "
+                                    "by Sushi AI."
+                                )
+
+                            st.markdown(
+                                ai_result["explanation"]
+                            )
+
+                        else:
+                            st.warning(
+                                ai_result["error"]
+                            )
+
+                    st.caption(
+                        "Sushi AI explains the scanner's findings but "
+                        "does not change its risk score. File contents "
+                        "and SHA-256 hashes are not sent to Sushi AI. "
+                        "Static analysis cannot guarantee file safety."
+                    )
