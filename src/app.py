@@ -347,29 +347,141 @@ with tab3:
         height=250,
     )
 
+    # Preserve email scan results across Streamlit reruns
+    if "email_scan_result" not in st.session_state:
+        st.session_state.email_scan_result = None
+
+    if "email_ai_result" not in st.session_state:
+        st.session_state.email_ai_result = None
+
+    if "email_scanned_input" not in st.session_state:
+        st.session_state.email_scanned_input = None
+
+    # Run Lucas's existing email scanner
     if st.button("Scan Email"):
+        st.session_state.email_scan_result = None
+        st.session_state.email_ai_result = None
+        st.session_state.email_scanned_input = None
+
         result = scan_email(email_content)
+
+        st.session_state.email_scan_result = result
+        st.session_state.email_scanned_input = email_content
+
+    # Retrieve saved scan results
+    result = st.session_state.email_scan_result
+
+    # Prevent old results from appearing for different emails
+    if (
+        result is not None
+        and email_content == st.session_state.email_scanned_input
+    ):
 
         if result["risk"] == "Invalid":
             st.warning(result["findings"][0])
+
         else:
+            st.subheader("Email Scan Results")
+
             col1, col2 = st.columns(2)
 
             with col1:
-                st.metric("Risk Score", f"{result['score']}/100")
+                st.metric(
+                    "Risk Score",
+                    f"{result['score']}/100"
+                )
 
             with col2:
-                st.metric("Risk Level", result["risk"])
+                st.metric(
+                    "Risk Level",
+                    result["risk"]
+                )
 
             st.progress(result["score"] / 100)
 
             st.subheader("Security Findings")
+
             for finding in result["findings"]:
                 st.write(f"- {finding}")
 
+            if result["risk"] in ["High", "Critical"]:
+                st.error(
+                    "This email contains multiple suspicious "
+                    "characteristics. Exercise caution."
+                )
+
+            elif result["risk"] == "Medium":
+                st.warning(
+                    "Some suspicious email characteristics "
+                    "were detected."
+                )
+
+            else:
+                st.success(
+                    "No major suspicious characteristics detected "
+                    "by the current rules."
+                )
+
             st.info(
-                "These findings require context. Legitimate emails can "
-                "trigger rules, and phishing emails can evade them."
+                "These findings require context. Legitimate "
+                "emails can trigger rules, and phishing "
+                "emails can evade them."
+            )
+
+            # ------------------------------------------
+            # SUSHI AI EMAIL SECURITY EXPLANATION
+            # ------------------------------------------
+
+            st.divider()
+
+            st.subheader("AI Security Explanation")
+
+            st.write(
+                "Use Sushi AI to explain the email's "
+                "detected security indicators and "
+                "recommend appropriate precautions."
+            )
+
+            if st.button(
+                "Generate Email AI Explanation",
+                key="email_ai"
+            ):
+                with st.spinner(
+                    "Generating security explanation..."
+                ):
+                    ai_result = analyze_with_ai(
+                        scan_type="Email",
+                        score=result["score"],
+                        risk=result["risk"],
+                        findings=result["findings"]
+                    )
+
+                    st.session_state.email_ai_result = ai_result
+
+            ai_result = st.session_state.email_ai_result
+
+            if ai_result is not None:
+
+                if ai_result["success"]:
+
+                    if ai_result["explanation"].startswith(
+                        "[OFFLINE TEST"
+                    ):
+                        st.info(
+                            "Offline demonstration mode is active. "
+                            "This explanation was not generated "
+                            "by Sushi AI."
+                        )
+
+                    st.markdown(ai_result["explanation"])
+
+                else:
+                    st.warning(ai_result["error"])
+
+            st.caption(
+                "AI explanations are advisory. "
+                "The original email scanner determines "
+                "the risk score and classification."
             )
 
 with tab4:
