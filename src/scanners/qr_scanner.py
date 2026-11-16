@@ -1,46 +1,28 @@
+"""Decode QR images locally, without opening decoded URLs or content."""
+
 import cv2
 import numpy as np
 
+MAX_QR_IMAGE_BYTES = 8 * 1024 * 1024
+
 
 def decode_qr(image_bytes):
-    """
-    Decode a QR code from uploaded image bytes.
-
-    Does not visit URLs or execute decoded content.
-    """
-    if not image_bytes:
-        return {
-            "success": False,
-            "content": None,
-            "error": "No image was provided."
-        }
-
+    """Return {'success', 'content', 'error'}; decoded text is untrusted."""
+    if not isinstance(image_bytes, bytes) or not image_bytes:
+        return {"success": False, "content": None, "error": "No QR image was provided."}
+    if len(image_bytes) > MAX_QR_IMAGE_BYTES:
+        return {"success": False, "content": None, "error": "QR image exceeds the 8 MiB limit."}
     try:
-        image_array = np.frombuffer(image_bytes, dtype=np.uint8)
-        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-
+        image = cv2.imdecode(np.frombuffer(image_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
         if image is None:
-            raise ValueError("Unable to read the image.")
-
-        detector = cv2.QRCodeDetector()
-        content, points, _ = detector.detectAndDecode(image)
-
+            return {"success": False, "content": None, "error": "Image could not be decoded."}
+        if image.shape[0] * image.shape[1] > 20_000_000:
+            return {"success": False, "content": None, "error": "QR image resolution is too large."}
+        content, _, _ = cv2.QRCodeDetector().detectAndDecode(image)
         if not content:
-            return {
-                "success": False,
-                "content": None,
-                "error": "No readable QR code was detected."
-            }
-
-        return {
-            "success": True,
-            "content": content,
-            "error": None
-        }
-
-    except (ValueError, cv2.error) as error:
-        return {
-            "success": False,
-            "content": None,
-            "error": str(error)
-        }
+            return {"success": False, "content": None, "error": "No readable QR code was found."}
+        if len(content) > 8192:
+            return {"success": False, "content": None, "error": "Decoded QR content exceeds the supported length."}
+        return {"success": True, "content": content, "error": None}
+    except (ValueError, cv2.error, MemoryError):
+        return {"success": False, "content": None, "error": "Unable to process the uploaded QR image."}

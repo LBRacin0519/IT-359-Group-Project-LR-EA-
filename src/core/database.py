@@ -1,25 +1,38 @@
+"""Local SQLite scan-history storage, without original inputs or API credentials."""
+
 import json
 import sqlite3
 from datetime import datetime, timezone
+from contextlib import contextmanager
 from pathlib import Path
 
-
-# Store the database outside the source-code directory.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATABASE_PATH = PROJECT_ROOT / "data" / "scan_history.sqlite3"
+VALID_TYPES = frozenset({"URL", "QR Code", "Email", "File"})
+VALID_RISKS = frozenset({"Low", "Medium", "High", "Critical"})
+
+
+def _connect():
+    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(DATABASE_PATH, timeout=10)
+
+
+@contextmanager
+def _db():
+    connection = _connect()
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def init_db():
-    """Create the scan history database and table."""
-
-    DATABASE_PATH.parent.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-    connection = sqlite3.connect(DATABASE_PATH)
-
-    try:
+    """Create a local history database if it does not already exist."""
+    with _db() as connection:
         connection.execute("""
             CREATE TABLE IF NOT EXISTS scan_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,101 +43,62 @@ def init_db():
                 findings TEXT NOT NULL
             )
         """)
-
-        connection.commit()
-
-    finally:
-        connection.close()
+        connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_history_timestamp
+            ON scan_history(timestamp DESC)
+        """)
 
 
 def save_scan(scan_type, result):
-    """Save a security scan result and return its ID."""
-
-    valid_types = {"URL", "QR Code", "Email", "File"}
-    valid_risks = {"Low", "Medium", "High", "Critical"}
-
+    """Save one completed valid scan; do not persist the submitted content."""
+    if scan_type not in VALID_TYPES:
+        raise ValueError("Unsupported scanner type.")
+    if not isinstance(result, dict):
+        raise ValueError("Invalid scan result.")
     score = result.get("score")
     risk = result.get("risk")
     findings = result.get("findings")
-
-    if scan_type not in valid_types:
-        raise ValueError("Unsupported scan type.")
-
     if type(score) is not int or not 0 <= score <= 100:
-        raise ValueError("Invalid risk score.")
-
-    if risk not in valid_risks:
-        raise ValueError("Invalid risk classification.")
-
-    if not isinstance(findings, list) or not all(
-        isinstance(item, str) for item in findings
-    ):
-        raise ValueError("Invalid security findings.")
-
+        raise ValueError("Invalid scan score.")
+    if risk not in VALID_RISKS:
+        raise ValueError("Invalid scan risk level.")
+    if not isinstance(findings, list) or not all(isinstance(f, str) for f in findings):
+        raise ValueError("Invalid scan findings.")
+    # Scanner findings are intentionally sanitized, but storage still has a bound.
+    safe_findings = [finding[:300] for finding in findings[:30]]
     init_db()
-
-    timestamp = datetime.now(
-        timezone.utc
-    ).isoformat(timespec="seconds")
-
-    connection = sqlite3.connect(DATABASE_PATH)
-
-    try:
+    timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with _db() as connection:
         cursor = connection.execute(
-            """
-            INSERT INTO scan_history
-            (timestamp, scan_type, score, risk, findings)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (
-                timestamp,
-                scan_type,
-                score,
-                risk,
-                json.dumps(findings)
-            )
+            """INSERT INTO scan_history (timestamp, scan_type, score, risk, findings)
+               VALUES (?, ?, ?, ?, ?)""",
+            (timestamp, scan_type, score, risk, json.dumps(safe_findings)),
         )
-
-        connection.commit()
         return cursor.lastrowid
 
-    finally:
-        connection.close()
 
-
-def get_recent_scans(limit=50):
-    """Retrieve recent scan results, newest first."""
-
+def get_recent_scans(limit=200):
+    """Read a bounded number of records, newest first."""
+    if type(limit) is not int:
+        raise ValueError("Limit must be an integer.")
+    limit = max(1, min(limit, 500))
     init_db()
-
-    limit = max(1, min(int(limit), 100))
-
-    connection = sqlite3.connect(DATABASE_PATH)
-    connection.row_factory = sqlite3.Row
-
-    try:
+    with _db() as connection:
+        connection.row_factory = sqlite3.Row
         rows = connection.execute(
-            """
-            SELECT id, timestamp, scan_type,
-                   score, risk, findings
-            FROM scan_history
-            ORDER BY id DESC
-            LIMIT ?
-            """,
-            (limit,)
+            """SELECT id, timestamp, scan_type, score, risk, findings
+               FROM scan_history ORDER BY id DESC LIMIT ?""",
+            (limit,),
         ).fetchall()
+    return [{
+        "id": row["id"], "timestamp": row["timestamp"],
+        "scan_type": row["scan_type"], "score": row["score"],
+        "risk": row["risk"], "findings": json.loads(row["findings"]),
+    } for row in rows]
 
-        return [
-            {
-                "id": row["id"],
-                "timestamp": row["timestamp"],
-                "scan_type": row["scan_type"],
-                "score": row["score"],
-                "risk": row["risk"],
-                "findings": json.loads(row["findings"])
-            }
-            for row in rows
-        ]
 
-    finally:
-        connection.close()
+def count_scans():
+    """Return total scan count (not just the number shown on the dashboard)."""
+    init_db()
+    with _db() as connection:
+        return connection.execute("SELECT COUNT(*) FROM scan_history").fetchone()[0]
