@@ -1,0 +1,13 @@
+From: IT Support <support@university-example.test>
+Reply-To: verification@account-help.test
+Authentication-Results: mx.university-example.test; spf=fail; dkim=fail; dmarc=fail
+Subject: URGENT: Your Account Will Be Locked
+
+Your account will be locked within 24 hours.
+Please verify your account and confirm your password immediately.
+
+Visit: http://192.0.2.55/login/verify
+
+Attachment: account_update.pdf.exe
+
+IT Support
